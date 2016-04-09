@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DoorPlate</string>
+    <string name="title_activity_grid_db">GridDbActivity</string>
+    <string name="title_activity_display_db">DisplayDbActivity</string>
+</resources>
