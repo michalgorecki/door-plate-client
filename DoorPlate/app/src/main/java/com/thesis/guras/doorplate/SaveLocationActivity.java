@@ -3,7 +3,6 @@ package com.thesis.guras.doorplate;
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -56,7 +55,7 @@ public class SaveLocationActivity extends AppCompatActivity {
                 String locationName = editText.getText().toString();
                 DatabaseDataModel ddm = null;
                 mDbHandler.open();
-                //Record content depends on what the wifi scan results are
+                //This switch prevents from nullpointerexception when there are less than 5 detected WiFis
                 switch(currentWifiList.size()){
                     case 0 :
                         Toast.makeText(SaveLocationActivity.this,"No wifi networks detected!",Toast.LENGTH_LONG);
@@ -72,8 +71,10 @@ public class SaveLocationActivity extends AppCompatActivity {
                          ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,currentWifiList.get(1).SSID,currentWifiList.get(1).level,currentWifiList.get(2).SSID,currentWifiList.get(2).level,currentWifiList.get(3).SSID,currentWifiList.get(3).level,currentWifiList.get(4).SSID,currentWifiList.get(4).level);
                 }
                 if(ddm != null){
-                    Log.d("DatabaseDataModel",ddm.getAllRecordData());
+
+                    Log.d("DatabaseDataModel",ddm.getRecordData());
                     Log.d("Inserted record no.",String.valueOf(mDbHandler.insertPattern(ddm)));
+
                 }
 
                 mDbHandler.close();

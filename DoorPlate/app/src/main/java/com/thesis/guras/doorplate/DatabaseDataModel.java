@@ -68,7 +68,7 @@ public class DatabaseDataModel {
         this.RSSI_TOTAL = this.RSSI1 + this.RSSI2 + this.RSSI3 + this.RSSI4 + this.RSSI5;
     }
 
-    public String getAllRecordData(){
+    public String getRecordData(){
         return "Record data: "+locationName+", "+SSID1+"/"+RSSI1+", "+SSID2+"/"+RSSI2+", "+SSID3+"/"+RSSI3+", "+SSID4+"/"+RSSI4+", "+SSID5+"/"+RSSI5;
     }
 
