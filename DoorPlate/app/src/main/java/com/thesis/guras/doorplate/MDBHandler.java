@@ -5,7 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.wifi.ScanResult;
 import android.util.Log;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 /**
@@ -30,7 +33,10 @@ public class MDBHandler {
     private Context context;
     private MDBOpenHelper myDbOpenHelper;
 
-
+    /**
+     *
+     * @param context
+     */
     MDBHandler(Context context) {
         this.context = context;
     }
@@ -41,7 +47,11 @@ public class MDBHandler {
         return this;
     }
 
-
+    /**
+     *
+     * @param dbm
+     * @return
+     */
     public long insertPattern(DatabaseDataModel dbm){
         Log.d(DEBUG_TAG, "insertPattern()");
         ContentValues mContentValues = new ContentValues();
@@ -59,14 +69,13 @@ public class MDBHandler {
         mContentValues.put("REC_SUCCESS",dbm.getREC_SUCCESS());
         mContentValues.put("REC_FAILURE", dbm.getREC_FAILURE());
         mContentValues.put("RSSI_TOTAL", dbm.getRSSITotal());
-
         Log.d(DEBUG_TAG, db.toString());
         //debugging purpose only
-        Cursor cursor = getAllPatterns(db);
+        /*Cursor cursor = getAllPatterns(db);
         if(cursor != null){
             ArrayList<DatabaseDataModel> patternList = getPatternsList(cursor);
         }
-
+        */
         //end
         Log.d(DEBUG_TAG,"insertPattern()");
         return db.insert(PATTERNS_TABLE_NAME,null,mContentValues);
@@ -149,10 +158,49 @@ public class MDBHandler {
     }
 
 
+
+    public ArrayList<DatabaseDataModel> getSimilarPatterns(DatabaseDataModel ddm, String locationName){
+
+        Cursor similarPatternsCursor = db.rawQuery("SELECT * FROM "+ PATTERNS_TABLE_NAME,null);
+        ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
+        return similarPatternsList;
+    }
+
     public void close() {
         myDbOpenHelper.close();
     }
 
+    /**
+     * This method returns a DatabaseDataModel object with values ready to be inserted to database
+     * @param currentWifiList
+     * @param locationName
+     * @return
+     */
+    public DatabaseDataModel setupInsertContent(ArrayList<ScanResult> currentWifiList, String locationName){
+        DatabaseDataModel ddm = null;
+
+        //This switch prevents from nullpointerexception when there are less than 5 detected WiFis
+        switch (currentWifiList.size()) {
+            case 0:
+                Log.d(DEBUG_TAG,"No wifi networks have been detected");
+                break;
+            case 1:
+                ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, "null", 0, "null", 0, "null", 0, "null", 0);
+                break;
+            case 2:
+                ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, "null", 0, "null", 0, "null", 0);
+                 break;
+            case 3:
+                ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, "null", 0, "null", 0);
+                break;
+            case 4:
+                ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, "null", 0);
+                break;
+            default:
+                ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, currentWifiList.get(4).SSID, currentWifiList.get(4).level);
+        }
+        return ddm;
+    }
     /*
         This private class extends SQL helper to provide basic SQL interface
      */

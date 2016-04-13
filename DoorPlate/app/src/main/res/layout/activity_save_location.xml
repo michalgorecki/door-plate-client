@@ -15,21 +15,20 @@
         android:text="Save this location"
         android:id="@+id/saveLocationButton"
 
-        android:layout_alignParentTop="false"
-        android:layout_alignParentRight="false"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
         android:layout_alignWithParentIfMissing="false"
-        android:onClick="saveLocationOnClick" />
+        android:onClick="saveLocationOnClick"
+        android:layout_below="@+id/locationNameEditText"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/locationNameEditText"
-        android:layout_above="@+id/saveLocationButton"
+        android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/saveLocationButton"
         android:layout_alignEnd="@+id/saveLocationButton"
-        android:layout_alignLeft="@+id/saveLocationButton"
-        android:layout_alignStart="@+id/saveLocationButton" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

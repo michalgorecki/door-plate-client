@@ -10,14 +10,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
 public class SaveLocationActivity extends AppCompatActivity {
     private ArrayList<ScanResult> currentWifiList = new ArrayList<ScanResult>();
+    private String DEBUG_TAG = "SaveLocationActivity";
     private MDBHandler mDbHandler = new MDBHandler(this);
     Comparator<ScanResult> comparator = new Comparator<ScanResult>() {
         @Override
@@ -52,33 +51,16 @@ public class SaveLocationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 String locationName = editText.getText().toString();
-
-                DatabaseDataModel ddm = null;
-                if(locationName != "") {
-                    mDbHandler.open();
-                    //This switch prevents from nullpointerexception when there are less than 5 detected WiFis
-                    switch (currentWifiList.size()) {
-                        case 0:
-                            Toast.makeText(SaveLocationActivity.this, "No wifi networks detected!", Toast.LENGTH_LONG);
-                        case 1:
-                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, "null", 0, "null", 0, "null", 0, "null", 0);
-                        case 2:
-                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, "null", 0, "null", 0, "null", 0);
-                        case 3:
-                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, "null", 0, "null", 0);
-                        case 4:
-                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, "null", 0);
-                        default:
-                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, currentWifiList.get(4).SSID, currentWifiList.get(4).level);
-                    }
+                if(locationName != "" && locationName != null) {
+                    DatabaseDataModel ddm = mDbHandler.setupInsertContent(currentWifiList, locationName);
                     if (ddm != null) {
-
-                        Log.d("DatabaseDataModel", ddm.getRecordData());
-                        Log.d("Inserted record no.", String.valueOf(mDbHandler.insertPattern(ddm)));
-
+                        mDbHandler.open();
+                        Log.d(DEBUG_TAG,"DatabaseDataModel: "+ddm.getRecordData());
+                        Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
+                        mDbHandler.close();
                     }
                 }
-                mDbHandler.close();
+
             }
         });
     }
