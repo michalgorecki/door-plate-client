@@ -44,39 +44,40 @@ public class SaveLocationActivity extends AppCompatActivity {
             currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
             Collections.sort(currentWifiList,comparator);
         }
-
+        //create variables corresponding to GUI elements
         final EditText editText = (EditText) findViewById(R.id.locationNameEditText);
-
         final Button button = (Button) findViewById(R.id.saveLocationButton);
         button.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v){
                 String locationName = editText.getText().toString();
+
                 DatabaseDataModel ddm = null;
-                mDbHandler.open();
-                //This switch prevents from nullpointerexception when there are less than 5 detected WiFis
-                switch(currentWifiList.size()){
-                    case 0 :
-                        Toast.makeText(SaveLocationActivity.this,"No wifi networks detected!",Toast.LENGTH_LONG);
-                    case 1 :
-                         ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,"null",0,"null",0,"null",0,"null",0);
-                    case 2 :
-                         ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,currentWifiList.get(1).SSID,currentWifiList.get(1).level,"null",0,"null",0,"null",0);
-                    case 3 :
-                         ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,currentWifiList.get(1).SSID,currentWifiList.get(1).level,currentWifiList.get(2).SSID,currentWifiList.get(2).level,"null",0,"null",0);
-                    case 4 :
-                         ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,currentWifiList.get(1).SSID,currentWifiList.get(1).level,currentWifiList.get(2).SSID,currentWifiList.get(2).level,currentWifiList.get(3).SSID,currentWifiList.get(3).level,"null",0);
-                    default :
-                         ddm = new DatabaseDataModel(locationName,currentWifiList.get(0).SSID,currentWifiList.get(0).level,currentWifiList.get(1).SSID,currentWifiList.get(1).level,currentWifiList.get(2).SSID,currentWifiList.get(2).level,currentWifiList.get(3).SSID,currentWifiList.get(3).level,currentWifiList.get(4).SSID,currentWifiList.get(4).level);
+                if(locationName != "") {
+                    mDbHandler.open();
+                    //This switch prevents from nullpointerexception when there are less than 5 detected WiFis
+                    switch (currentWifiList.size()) {
+                        case 0:
+                            Toast.makeText(SaveLocationActivity.this, "No wifi networks detected!", Toast.LENGTH_LONG);
+                        case 1:
+                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, "null", 0, "null", 0, "null", 0, "null", 0);
+                        case 2:
+                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, "null", 0, "null", 0, "null", 0);
+                        case 3:
+                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, "null", 0, "null", 0);
+                        case 4:
+                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, "null", 0);
+                        default:
+                            ddm = new DatabaseDataModel(locationName, currentWifiList.get(0).SSID, currentWifiList.get(0).level, currentWifiList.get(1).SSID, currentWifiList.get(1).level, currentWifiList.get(2).SSID, currentWifiList.get(2).level, currentWifiList.get(3).SSID, currentWifiList.get(3).level, currentWifiList.get(4).SSID, currentWifiList.get(4).level);
+                    }
+                    if (ddm != null) {
+
+                        Log.d("DatabaseDataModel", ddm.getRecordData());
+                        Log.d("Inserted record no.", String.valueOf(mDbHandler.insertPattern(ddm)));
+
+                    }
                 }
-                if(ddm != null){
-
-                    Log.d("DatabaseDataModel",ddm.getRecordData());
-                    Log.d("Inserted record no.",String.valueOf(mDbHandler.insertPattern(ddm)));
-
-                }
-
                 mDbHandler.close();
             }
         });
