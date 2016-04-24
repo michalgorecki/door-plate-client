@@ -18,6 +18,10 @@ import java.util.Comparator;
 
 public class SaveLocationActivity extends AppCompatActivity {
     private ArrayList<ScanResult> currentWifiList = new ArrayList<ScanResult>();
+    //create variables corresponding to GUI elements
+    private EditText editText;
+    private Button button;
+    private ListView listView;
     private String DEBUG_TAG = "SaveLocationActivity";
     private MDBHandler mDbHandler = new MDBHandler(this);
     Comparator<ScanResult> comparator = new Comparator<ScanResult>() {
@@ -27,6 +31,15 @@ public class SaveLocationActivity extends AppCompatActivity {
                     (firstResult.level==secondResult.level ? 0 : 1));
         }
     };
+
+
+    private void populateListViewWithPatterns(){
+        mDbHandler.open();
+        Cursor cursor = mDbHandler.getAllPatterns();
+        final PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,cursor,0);
+        listView.setAdapter(mAdapter);
+        mDbHandler.close();
+    }
     /**
      *
      * @param savedInstanceState
@@ -45,17 +58,12 @@ public class SaveLocationActivity extends AppCompatActivity {
             currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
             Collections.sort(currentWifiList,comparator);
         }
-        //create variables corresponding to GUI elements
-        final EditText editText = (EditText) findViewById(R.id.locationNameEditText);
-        final Button button = (Button) findViewById(R.id.saveLocationButton);
-        final ListView listView = (ListView) findViewById(R.id.listView);
+        editText = (EditText) findViewById(R.id.locationNameEditText);
+        button = (Button) findViewById(R.id.saveLocationButton);
+        listView = (ListView) findViewById(R.id.listView);
 
-        mDbHandler.open();
-        Cursor cursor = mDbHandler.getAllPatterns();
 
-            PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,cursor,0);
-            listView.setAdapter(mAdapter);
-        mDbHandler.close();
+       populateListViewWithPatterns();
 
         button.setOnClickListener(new View.OnClickListener(){
 
@@ -69,6 +77,7 @@ public class SaveLocationActivity extends AppCompatActivity {
                         Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
                         editText.setText("");
+                        populateListViewWithPatterns();
                     }
                     mDbHandler.close();
                 }
