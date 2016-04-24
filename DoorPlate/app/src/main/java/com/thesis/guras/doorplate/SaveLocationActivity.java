@@ -1,6 +1,7 @@
 package com.thesis.guras.doorplate;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,21 +48,30 @@ public class SaveLocationActivity extends AppCompatActivity {
         //create variables corresponding to GUI elements
         final EditText editText = (EditText) findViewById(R.id.locationNameEditText);
         final Button button = (Button) findViewById(R.id.saveLocationButton);
+        final ListView listView = (ListView) findViewById(R.id.listView);
+
+        mDbHandler.open();
+        Cursor cursor = mDbHandler.getAllPatterns();
+
+            PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,cursor,0);
+            listView.setAdapter(mAdapter);
+        mDbHandler.close();
+
         button.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v){
                 String locationName = editText.getText().toString();
-                if(locationName != "" && locationName != null) {
+                if(!locationName.equals("") && locationName != null) {
+                    mDbHandler.open();
                     DatabaseDataModel ddm = mDbHandler.setupInsertContent(currentWifiList, locationName);
                     if (ddm != null) {
-                        mDbHandler.open();
-                        Log.d(DEBUG_TAG,"DatabaseDataModel: "+ddm.getRecordData());
+                        Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
-                        mDbHandler.close();
+                        editText.setText("");
                     }
+                    mDbHandler.close();
                 }
-
             }
         });
     }

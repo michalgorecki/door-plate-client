@@ -3,7 +3,8 @@ package com.thesis.guras.doorplate;
 /**
  * Created by guras on 27.01.16.
  */
-public class DatabaseDataModel {
+public class DatabaseDataModel{
+
     private String locationName;
     private String SSID1;
     private float RSSI1;

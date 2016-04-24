@@ -21,7 +21,7 @@ public class MDBHandler {
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
     private static final String PATTERNS_TABLE_NAME = "Patterns";
     private static final String PATTERNS_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " ( _ID INTEGER PRIMARY KEY AUTOINCREMENT, LocationName NOT NULL, " +
+            "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, LocationName NOT NULL, " +
                     "SSID1 NOT NULL,RSSI1 NOT NULL,"+
                     "SSID2 NOT NULL,RSSI2 NOT NULL,"+
                     "SSID3 NOT NULL,RSSI3 NOT NULL,"+
@@ -70,13 +70,6 @@ public class MDBHandler {
         mContentValues.put("REC_FAILURE", dbm.getREC_FAILURE());
         mContentValues.put("RSSI_TOTAL", dbm.getRSSITotal());
         Log.d(DEBUG_TAG, db.toString());
-        //debugging purpose only
-        /*Cursor cursor = getAllPatterns(db);
-        if(cursor != null){
-            ArrayList<DatabaseDataModel> patternList = getPatternsList(cursor);
-        }
-        */
-        //end
         Log.d(DEBUG_TAG,"insertPattern()");
         return db.insert(PATTERNS_TABLE_NAME,null,mContentValues);
     }
@@ -91,12 +84,8 @@ public class MDBHandler {
         return db.delete(PATTERNS_TABLE_NAME, where, null) > 0;
     }
 
-    /**
-     *
-     * @param db
-     * @return
-     */
-    public Cursor getAllPatterns(SQLiteDatabase db) {
+
+    public Cursor getAllPatterns() {
         Log.d(DEBUG_TAG,"getAllPatterns()");
         String selectQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME;
         if(db.isOpen()){
@@ -157,12 +146,11 @@ public class MDBHandler {
 
     }
 
-
-
     public ArrayList<DatabaseDataModel> getSimilarPatterns(DatabaseDataModel ddm, String locationName){
 
-        Cursor similarPatternsCursor = db.rawQuery("SELECT * FROM "+ PATTERNS_TABLE_NAME,null);
+        Cursor similarPatternsCursor = db.rawQuery("SELECT * FROM "+ PATTERNS_TABLE_NAME+" WHERE SSID1='"+ddm.getSSID(0)+"', SSID2='"+ddm.getSSID(1)+"'",null);
         ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
+
         return similarPatternsList;
     }
 
