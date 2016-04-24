@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,11 +34,13 @@ public class SaveLocationActivity extends AppCompatActivity {
     };
 
 
-    private void populateListViewWithPatterns(){
+    private void populateListViewWithPatterns(DatabaseDataModel currentDdm){
         mDbHandler.open();
-        Cursor cursor = mDbHandler.getAllPatterns();
-        final PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,cursor,0);
-        listView.setAdapter(mAdapter);
+        Cursor cursor = mDbHandler.getSimilarPatterns(currentDdm,"none");
+        if(cursor != null && cursor.getCount() > 0){
+            final PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,cursor,0);
+            listView.setAdapter(mAdapter);
+        }
         mDbHandler.close();
     }
     /**
@@ -48,7 +51,7 @@ public class SaveLocationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_location);
-        WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
         //check if wifi is enabled
         if (!myWifiManager.isWifiEnabled()) {
@@ -61,9 +64,8 @@ public class SaveLocationActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.locationNameEditText);
         button = (Button) findViewById(R.id.saveLocationButton);
         listView = (ListView) findViewById(R.id.listView);
-
-
-       populateListViewWithPatterns();
+        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
+        populateListViewWithPatterns(mCurrentDataModel);
 
         button.setOnClickListener(new View.OnClickListener(){
 
@@ -72,12 +74,15 @@ public class SaveLocationActivity extends AppCompatActivity {
                 String locationName = editText.getText().toString();
                 if(!locationName.equals("") && locationName != null) {
                     mDbHandler.open();
+                    currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
+                    Collections.sort(currentWifiList,comparator);
                     DatabaseDataModel ddm = mDbHandler.setupInsertContent(currentWifiList, locationName);
                     if (ddm != null) {
+
                         Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
                         editText.setText("");
-                        populateListViewWithPatterns();
+
                     }
                     mDbHandler.close();
                 }

@@ -50,7 +50,7 @@ public class MDBHandler {
     /**
      *
      * @param dbm
-     * @return
+     * @return Id assigned to the record
      */
     public long insertPattern(DatabaseDataModel dbm){
         Log.d(DEBUG_TAG, "insertPattern()");
@@ -146,12 +146,34 @@ public class MDBHandler {
 
     }
 
-    public ArrayList<DatabaseDataModel> getSimilarPatterns(DatabaseDataModel ddm, String locationName){
+    public Cursor getSimilarPatterns(DatabaseDataModel ddm, String locationName){
+        Log.d(DEBUG_TAG,"getSimilarPatterns()");
 
-        Cursor similarPatternsCursor = db.rawQuery("SELECT * FROM "+ PATTERNS_TABLE_NAME+" WHERE SSID1='"+ddm.getSSID(0)+"', SSID2='"+ddm.getSSID(1)+"'",null);
-        ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
-
-        return similarPatternsList;
+        String longQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE SSID1='"+ddm.getSSID(1)+"' :AND SSID2='"+ddm.getSSID(2)+"' :AND SSID3='"+ddm.getSSID(3)+"' :AND SSID4='"+ddm.getSSID(4)+"' :AND SSID5='"+ddm.getSSID(5)+"'";
+        String [] queryBuilderArray = longQuery.split(":");
+        String initialQuery = queryBuilderArray[0]+queryBuilderArray[1]+queryBuilderArray[2]+queryBuilderArray[3]+queryBuilderArray[4];
+        Cursor similarPatternsCursor = db.rawQuery(initialQuery,null);
+        int counter = 4;
+        while(similarPatternsCursor.getCount() < 1 ){
+            String mQuery = "";
+            for(int i = 0; i < counter; i++){
+                mQuery += queryBuilderArray[i];
+            }
+            Log.d(DEBUG_TAG,mQuery);
+            similarPatternsCursor = db.rawQuery(mQuery,null);
+            counter -= 1;
+            if(counter == 0){
+                break;
+            }
+        }
+        if(similarPatternsCursor.getCount() < 1){
+            Log.d(DEBUG_TAG,"No similar patterns - cursor count was 0");
+            Log.d(DEBUG_TAG,"getSimilarPatterns()");
+            return null;
+        }
+        Log.d(DEBUG_TAG,"getSimilarPatterns()");
+        //ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
+        return similarPatternsCursor;
     }
 
     public void close() {
