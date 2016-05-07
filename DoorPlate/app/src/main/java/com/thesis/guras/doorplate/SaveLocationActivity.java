@@ -1,14 +1,17 @@
 package com.thesis.guras.doorplate;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -19,6 +22,7 @@ import java.util.Comparator;
 
 public class SaveLocationActivity extends AppCompatActivity {
     private ArrayList<ScanResult> currentWifiList = new ArrayList<ScanResult>();
+
     //create variables corresponding to GUI elements
     private EditText editText;
     private Button button;
@@ -34,7 +38,7 @@ public class SaveLocationActivity extends AppCompatActivity {
     };
 
 
-    private void populateListViewWithPatterns(DatabaseDataModel currentDdm){
+    private Cursor populateListViewWithPatterns(DatabaseDataModel currentDdm){
         mDbHandler.open();
         Cursor cursor = mDbHandler.getSimilarPatterns(currentDdm,"none");
         if(cursor != null && cursor.getCount() > 0){
@@ -42,6 +46,7 @@ public class SaveLocationActivity extends AppCompatActivity {
             listView.setAdapter(mAdapter);
         }
         mDbHandler.close();
+        return cursor;
     }
     /**
      *
@@ -64,11 +69,11 @@ public class SaveLocationActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.locationNameEditText);
         button = (Button) findViewById(R.id.saveLocationButton);
         listView = (ListView) findViewById(R.id.listView);
+
         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
-        populateListViewWithPatterns(mCurrentDataModel);
+        final Cursor listItems = populateListViewWithPatterns(mCurrentDataModel);
 
         button.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v){
                 String locationName = editText.getText().toString();
@@ -82,15 +87,45 @@ public class SaveLocationActivity extends AppCompatActivity {
                         Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
                         editText.setText("");
-
                     }
                     mDbHandler.close();
                 }
             }
         });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(DEBUG_TAG,"onItemClick()");
+
+
+                listItems.moveToPosition(position);
+                final String selectedItemName =  listItems.getString(1);
+                AlertDialog.Builder builder = new AlertDialog.Builder(SaveLocationActivity.this);
+                builder.setTitle("Use that location?").setMessage("A following location will be used:");
+                builder.setMessage(selectedItemName);
+                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dlg, int x) {
+                                onLaunchMessageSender(selectedItemName);
+                            }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dlg, int x) {
+
+                            }
+                        });
+                builder.show();
+            }
+        });
     }
 
 
+    public void onLaunchMessageSender(String locationName){
+        Intent intent = new Intent(this, SendMessageActivity.class);
+        intent.putExtra("LocationName",locationName);
+        SaveLocationActivity.this.startActivity(intent);
+    }
     @Override
     protected void onDestroy(){
         mDbHandler.close();

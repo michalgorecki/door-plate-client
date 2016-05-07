@@ -159,6 +159,7 @@ public class MDBHandler {
         String longQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE RSSI_TOTAL BETWEEN "+lowerRSSIBound+" AND "+upperRSSIBound+" AND SSID1='"+ddm.getSSID(1)+"' :AND SSID2='"+ddm.getSSID(2)+"' :AND SSID3='"+ddm.getSSID(3)+"' :AND SSID4='"+ddm.getSSID(4)+"' :AND SSID5='"+ddm.getSSID(5)+"'";
         String [] queryBuilderArray = longQuery.split(":");
 
+        //initially, the query asks for patterns with all SSIDs matching
         String initialQuery = queryBuilderArray[0]+queryBuilderArray[1]+queryBuilderArray[2]+queryBuilderArray[3]+queryBuilderArray[4];
         Cursor similarPatternsCursor = db.rawQuery(initialQuery,null);
 
