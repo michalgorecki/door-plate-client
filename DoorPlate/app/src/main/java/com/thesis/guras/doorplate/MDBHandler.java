@@ -19,6 +19,8 @@ public class MDBHandler {
     private static final int DATABASE_VERSION = 1;
     private static final String DEBUG_TAG = "MyAppLogger";
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
+    private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
+    private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.2;
     private static final String PATTERNS_TABLE_NAME = "Patterns";
     private static final String PATTERNS_TABLE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, LocationName NOT NULL, " +
@@ -107,16 +109,16 @@ public class MDBHandler {
     }
 
     /**
-     *
+     *Method used to check number of records
      * @param db
-     * @return
+     * @return int
      */
-    public int getPatternCount(SQLiteDatabase db){
-        Log.d(DEBUG_TAG,"getPatternCount()");
+    public int getNumberOfPatterns(SQLiteDatabase db){
+        Log.d(DEBUG_TAG,"getNumberOfPatterns()");
         String countQuery = "SELECT *  FROM " + PATTERNS_TABLE_NAME;
         Log.d(DEBUG_TAG, "Query : " + countQuery);
         Cursor cursor = db.rawQuery(countQuery, null);
-        Log.d(DEBUG_TAG, "getPatternCount()");
+        Log.d(DEBUG_TAG, "getNumberOfPatterns()");
         return cursor.getCount();
     }
 
@@ -149,28 +151,34 @@ public class MDBHandler {
     public Cursor getSimilarPatterns(DatabaseDataModel ddm, String locationName){
         Log.d(DEBUG_TAG,"getSimilarPatterns()");
 
-        String longQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE SSID1='"+ddm.getSSID(1)+"' :AND SSID2='"+ddm.getSSID(2)+"' :AND SSID3='"+ddm.getSSID(3)+"' :AND SSID4='"+ddm.getSSID(4)+"' :AND SSID5='"+ddm.getSSID(5)+"'";
+        //Calculate range of RSSI_TOTAL which will further match
+        double lowerRSSIBound = ddm.getRSSITotal()*(1 - MAX_DEVIATION_FROM_RSSI_TOTAL);
+        double upperRSSIBound = ddm.getRSSITotal()*(1 + MAX_DEVIATION_FROM_RSSI_TOTAL);
+
+        //Split the query into pieces to manipulate the search criteria
+        String longQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE RSSI_TOTAL BETWEEN "+lowerRSSIBound+" AND "+upperRSSIBound+" AND SSID1='"+ddm.getSSID(1)+"' :AND SSID2='"+ddm.getSSID(2)+"' :AND SSID3='"+ddm.getSSID(3)+"' :AND SSID4='"+ddm.getSSID(4)+"' :AND SSID5='"+ddm.getSSID(5)+"'";
         String [] queryBuilderArray = longQuery.split(":");
+
         String initialQuery = queryBuilderArray[0]+queryBuilderArray[1]+queryBuilderArray[2]+queryBuilderArray[3]+queryBuilderArray[4];
         Cursor similarPatternsCursor = db.rawQuery(initialQuery,null);
+
         int counter = 4;
-        while(similarPatternsCursor.getCount() < 1 ){
+        while(similarPatternsCursor.getCount() < MIN_NUMBER_OF_MATCHING_PATTERNS && counter > 0){
             String mQuery = "";
             for(int i = 0; i < counter; i++){
                 mQuery += queryBuilderArray[i];
             }
+
             Log.d(DEBUG_TAG,mQuery);
             similarPatternsCursor = db.rawQuery(mQuery,null);
             counter -= 1;
-            if(counter == 0){
-                break;
-            }
         }
         if(similarPatternsCursor.getCount() < 1){
             Log.d(DEBUG_TAG,"No similar patterns - cursor count was 0");
             Log.d(DEBUG_TAG,"getSimilarPatterns()");
             return null;
         }
+
         Log.d(DEBUG_TAG,"getSimilarPatterns()");
         //ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
         return similarPatternsCursor;

@@ -66,7 +66,7 @@ public class DatabaseDataModel{
         this.RSSI5 = R5;
         this.REC_FAILURE = 0;
         this.REC_SUCCESS = 0;
-        this.RSSI_TOTAL = this.RSSI1 + this.RSSI2 + this.RSSI3 + this.RSSI4 + this.RSSI5;
+        this.RSSI_TOTAL = Math.abs(this.RSSI1) + Math.abs(this.RSSI2) + Math.abs(this.RSSI3) + Math.abs(this.RSSI4) + Math.abs(this.RSSI5);
     }
 
     public String getRecordData(){
