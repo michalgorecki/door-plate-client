@@ -58,7 +58,7 @@ public class SaveLocationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_save_location);
         final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-        //check if wifi is enabled
+        //check if wifi is enabled  
         if (!myWifiManager.isWifiEnabled()) {
             Toast.makeText(SaveLocationActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
         } else {
@@ -98,8 +98,6 @@ public class SaveLocationActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(DEBUG_TAG,"onItemClick()");
-
-
                 listItems.moveToPosition(position);
                 final String selectedItemName =  listItems.getString(1);
                 AlertDialog.Builder builder = new AlertDialog.Builder(SaveLocationActivity.this);
@@ -119,7 +117,6 @@ public class SaveLocationActivity extends AppCompatActivity {
             }
         });
     }
-
 
     public void onLaunchMessageSender(String locationName){
         Intent intent = new Intent(this, SendMessageActivity.class);
