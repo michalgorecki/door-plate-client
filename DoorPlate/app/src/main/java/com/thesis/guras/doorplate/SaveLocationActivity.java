@@ -58,7 +58,7 @@ public class SaveLocationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_save_location);
         final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-        //check if wifi is enabled  
+        //check if wifi is enabled
         if (!myWifiManager.isWifiEnabled()) {
             Toast.makeText(SaveLocationActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
         } else {
@@ -71,7 +71,7 @@ public class SaveLocationActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
 
         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
-        final Cursor listItems = populateListViewWithPatterns(mCurrentDataModel);
+        final Cursor listItemsCursor = populateListViewWithPatterns(mCurrentDataModel);
 
         button.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -98,8 +98,11 @@ public class SaveLocationActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(DEBUG_TAG,"onItemClick()");
-                listItems.moveToPosition(position);
-                final String selectedItemName =  listItems.getString(1);
+
+                //item is selected from the cursor to get necessary data
+                listItemsCursor.moveToPosition(position);
+                final String selectedItemName =  listItemsCursor.getString(1);
+                final int itemId = listItemsCursor.getInt(0);
                 AlertDialog.Builder builder = new AlertDialog.Builder(SaveLocationActivity.this);
                 builder.setTitle("Use that location?").setMessage("A following location will be used:");
                 builder.setMessage(selectedItemName);
