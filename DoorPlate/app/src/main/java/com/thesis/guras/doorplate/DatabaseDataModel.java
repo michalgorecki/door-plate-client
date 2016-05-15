@@ -1,5 +1,10 @@
 package com.thesis.guras.doorplate;
 
+import android.util.Log;
+
+import java.util.Calendar;
+
+
 /**
  * Created by guras on 27.01.16.
  */
@@ -16,25 +21,21 @@ public class DatabaseDataModel{
     private float RSSI4;
     private String SSID5;
     private float RSSI5;
-    private int REC_SUCCESS;
-    private int REC_FAILURE;
     private float RSSI_TOTAL;
 
-    //initializes with zeros
+    //initializes with nulls
     public DatabaseDataModel() {
         locationName = "";
-        SSID1 = null;
-        SSID2 = null;
-        SSID3 = null;
-        SSID4 = null;
-        SSID5 = null;
+        SSID1 = "";
+        SSID2 = "";
+        SSID3 = "";
+        SSID4 = "";
+        SSID5 = "";
         RSSI1 = 0;
         RSSI2 = 0;
         RSSI3 = 0;
         RSSI4 = 0;
         RSSI5 = 0;
-        REC_FAILURE = 0;
-        REC_SUCCESS = 0;
         RSSI_TOTAL = 0;
     }
 
@@ -53,7 +54,7 @@ public class DatabaseDataModel{
      * @param R5
      */
     public DatabaseDataModel(String name,String S1, float R1,String S2, float R2,String S3, float R3,String S4, float R4,String S5, float R5){
-        this.locationName = name;
+        this.locationName = name.toLowerCase();
         this.SSID1 = S1;
         this.RSSI1 = R1;
         this.SSID2 = S2;
@@ -64,8 +65,10 @@ public class DatabaseDataModel{
         this.RSSI4 = R4;
         this.SSID5 = S5;
         this.RSSI5 = R5;
-        this.REC_FAILURE = 0;
-        this.REC_SUCCESS = 0;
+        Calendar calendar = Calendar.getInstance();
+        /*this.TIMESTAMP = String.valueOf(calendar.get(Calendar.YEAR))+"-"+String.valueOf(calendar.get(Calendar.MONTH))+"-"+String.valueOf(calendar.get(Calendar.DAY_OF_MONTH))+
+                "-"+String.valueOf(calendar.get(Calendar.HOUR))+"-"+String.valueOf(calendar.get(Calendar.MINUTE))+"-"+String.valueOf(calendar.get(Calendar.SECOND));
+        Log.d("DDM",TIMESTAMP);*/
         this.RSSI_TOTAL = Math.abs(this.RSSI1) + Math.abs(this.RSSI2) + Math.abs(this.RSSI3) + Math.abs(this.RSSI4) + Math.abs(this.RSSI5);
     }
 
@@ -122,15 +125,13 @@ public class DatabaseDataModel{
         }
         return -1;
     }
+    /*public String getTimestamp(){
+        return TIMESTAMP;
+    }*/
     public String getLocationName(){
         return locationName;
     }
-    public int getREC_SUCCESS(){
-        return REC_SUCCESS;
-    }
-    public int getREC_FAILURE(){
-        return REC_FAILURE;
-    }
+
     public float getRSSITotal(){
         return RSSI_TOTAL;
     }

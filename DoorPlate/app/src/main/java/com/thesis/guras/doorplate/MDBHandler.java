@@ -10,6 +10,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
 
 /**
  * Created by guras on 06.01.16.
@@ -19,17 +21,21 @@ public class MDBHandler {
     private static final int DATABASE_VERSION = 1;
     private static final String DEBUG_TAG = "MyAppLogger";
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
-    private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
+    private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 1;
     private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.2;
     private static final String PATTERNS_TABLE_NAME = "Patterns";
     private static final String PATTERNS_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, LocationName NOT NULL, " +
+            "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " (" +
+                    " _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "LocationName NOT NULL, " +
                     "SSID1 NOT NULL,RSSI1 NOT NULL,"+
                     "SSID2 NOT NULL,RSSI2 NOT NULL,"+
                     "SSID3 NOT NULL,RSSI3 NOT NULL,"+
-                    "SSID4,RSSI4,"+
-                    "SSID5,RSSI5,"+
-                    "REC_SUCCESS,REC_FAILURE,RSSI_TOTAL);";
+                    "SSID4 NOT NULL,RSSI4 NOT NULL,"+
+                    "SSID5 NOT NULL,RSSI5 NOT NULL,"+
+                    "RSSI_TOTAL NOT NULL," +
+                    "t TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
+                    ");";
     private static final String DROP_SSID_TABLE = "DROP TABLE IF EXISTS "+ PATTERNS_TABLE_NAME;
     private SQLiteDatabase db;
     private Context context;
@@ -68,8 +74,6 @@ public class MDBHandler {
         mContentValues.put("RSSI4",dbm.getRSSI(4));
         mContentValues.put("SSID5",dbm.getSSID(5));
         mContentValues.put("RSSI5",dbm.getRSSI(5));
-        mContentValues.put("REC_SUCCESS",dbm.getREC_SUCCESS());
-        mContentValues.put("REC_FAILURE", dbm.getREC_FAILURE());
         mContentValues.put("RSSI_TOTAL", dbm.getRSSITotal());
         Log.d(DEBUG_TAG, db.toString());
         Log.d(DEBUG_TAG,"insertPattern()");
@@ -108,19 +112,8 @@ public class MDBHandler {
         }
     }
 
-    /**
-     *Method used to check number of records
-     * @param db
-     * @return int
-     */
-    public int getNumberOfPatterns(SQLiteDatabase db){
-        Log.d(DEBUG_TAG,"getNumberOfPatterns()");
-        String countQuery = "SELECT *  FROM " + PATTERNS_TABLE_NAME;
-        Log.d(DEBUG_TAG, "Query : " + countQuery);
-        Cursor cursor = db.rawQuery(countQuery, null);
-        Log.d(DEBUG_TAG, "getNumberOfPatterns()");
-        return cursor.getCount();
-    }
+
+
 
     /**
      *
@@ -148,6 +141,33 @@ public class MDBHandler {
 
     }
 
+    /**
+     * This method is used to remove the oldest pattern and replace it with a new one
+     * for the current location once that location is successfully recognized
+     * @param locationName
+     */
+    public void removeOldestSimilarPattern(String locationName){
+        Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
+        locationName.toLowerCase();
+        String roomNumber = "";
+        if(locationName.matches(".*\\d.*")){
+            roomNumber.replaceAll("\\D+","");
+        }
+        String query = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE LocationName='"+locationName+"' OR LIKE %"+locationName+"% ORDER BY TIMESTAMP ASC";
+        Cursor similarLocationsCursor = db.rawQuery(query,null);
+        similarLocationsCursor.moveToFirst();
+        if(!deletePattern(similarLocationsCursor.getInt(0))){
+            Log.d(DEBUG_TAG,"Failed to remove record");
+            Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
+        }
+    }
+
+    /**
+     * This method is used to suggest locations which can be used
+     * @param ddm
+     * @param locationName
+     * @return
+     */
     public Cursor getSimilarPatterns(DatabaseDataModel ddm, String locationName){
         Log.d(DEBUG_TAG,"getSimilarPatterns()");
 
@@ -155,12 +175,13 @@ public class MDBHandler {
         double lowerRSSIBound = ddm.getRSSITotal()*(1 - MAX_DEVIATION_FROM_RSSI_TOTAL);
         double upperRSSIBound = ddm.getRSSITotal()*(1 + MAX_DEVIATION_FROM_RSSI_TOTAL);
 
-        //Split the query into pieces to manipulate the search criteria
+        //Split the query into pieces to manipulate the search criteria inside a loop
         String longQuery = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE RSSI_TOTAL BETWEEN "+lowerRSSIBound+" AND "+upperRSSIBound+" AND SSID1='"+ddm.getSSID(1)+"' :AND SSID2='"+ddm.getSSID(2)+"' :AND SSID3='"+ddm.getSSID(3)+"' :AND SSID4='"+ddm.getSSID(4)+"' :AND SSID5='"+ddm.getSSID(5)+"'";
         String [] queryBuilderArray = longQuery.split(":");
 
         //initially, the query asks for patterns with all SSIDs matching
         String initialQuery = queryBuilderArray[0]+queryBuilderArray[1]+queryBuilderArray[2]+queryBuilderArray[3]+queryBuilderArray[4];
+        Log.d(DEBUG_TAG,initialQuery);
         Cursor similarPatternsCursor = db.rawQuery(initialQuery,null);
 
         int counter = 4;
@@ -169,7 +190,6 @@ public class MDBHandler {
             for(int i = 0; i < counter; i++){
                 mQuery += queryBuilderArray[i];
             }
-
             Log.d(DEBUG_TAG,mQuery);
             similarPatternsCursor = db.rawQuery(mQuery,null);
             counter -= 1;
@@ -181,7 +201,6 @@ public class MDBHandler {
         }
 
         Log.d(DEBUG_TAG,"getSimilarPatterns()");
-        //ArrayList<DatabaseDataModel> similarPatternsList = getPatternsList(similarPatternsCursor);
         return similarPatternsCursor;
     }
 
