@@ -19,7 +19,7 @@ import java.util.Comparator;
 
 public class MDBHandler {
     private static final int DATABASE_VERSION = 1;
-    private static final String DEBUG_TAG = "MyAppLogger";
+    private static final String DEBUG_TAG = "MDBHandler";
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
     private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 1;
     private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.2;
@@ -34,7 +34,7 @@ public class MDBHandler {
                     "SSID4 NOT NULL,RSSI4 NOT NULL,"+
                     "SSID5 NOT NULL,RSSI5 NOT NULL,"+
                     "RSSI_TOTAL NOT NULL," +
-                    "t TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
+                    "INSERT_TIMESTAMP TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
                     ");";
     private static final String DROP_SSID_TABLE = "DROP TABLE IF EXISTS "+ PATTERNS_TABLE_NAME;
     private SQLiteDatabase db;
@@ -86,7 +86,7 @@ public class MDBHandler {
      * @return
      */
     public boolean deletePattern(long id){
-        String where = "ID =" + id;
+        String where = "_id =" + id;
         return db.delete(PATTERNS_TABLE_NAME, where, null) > 0;
     }
 
@@ -149,16 +149,19 @@ public class MDBHandler {
     public void removeOldestSimilarPattern(String locationName){
         Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
         locationName.toLowerCase();
-        String roomNumber = "";
-        if(locationName.matches(".*\\d.*")){
-            roomNumber.replaceAll("\\D+","");
-        }
-        String query = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE LocationName='"+locationName+"' OR LIKE %"+locationName+"% ORDER BY TIMESTAMP ASC";
+        String digitsOnly = locationName.replaceAll("[^0-9]", "");
+        String query = "SELECT * FROM "+PATTERNS_TABLE_NAME+" WHERE LocationName='"+locationName+"' OR LocationName LIKE '%"+digitsOnly+"%' ORDER BY INSERT_TIMESTAMP ASC";
         Cursor similarLocationsCursor = db.rawQuery(query,null);
         similarLocationsCursor.moveToFirst();
-        if(!deletePattern(similarLocationsCursor.getInt(0))){
-            Log.d(DEBUG_TAG,"Failed to remove record");
-            Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
+        if(similarLocationsCursor.getCount() >= 5 ){
+            Log.d(DEBUG_TAG,"There were at least 5 records matching current location. ");
+            if(!deletePattern(similarLocationsCursor.getInt(0))){
+                Log.d(DEBUG_TAG,"Failed to remove record");
+                Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
+            }else{
+                Log.d(DEBUG_TAG,"Record removal successful");
+                Log.d(DEBUG_TAG,"removeOldestSimilarPattern()");
+            }
         }
     }
 

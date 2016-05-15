@@ -52,7 +52,6 @@ public class SaveLocationActivity extends AppCompatActivity {
         if (!myWifiManager.isWifiEnabled()) {
             Toast.makeText(SaveLocationActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
         } else {
-
             //enter the scan results to a list and sort them using the comparator defined before
             currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
             Collections.sort(currentWifiList,comparator);
@@ -61,11 +60,14 @@ public class SaveLocationActivity extends AppCompatActivity {
             suggestedLocationsListView = (ListView) findViewById(R.id.listView);
         }
 
+        //suggest similar patterns based on available Wifis
         mDbHandler.open();
         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
         final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
         populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
         mDbHandler.close();
+
+        //save location once the button is clicked
         button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -78,7 +80,15 @@ public class SaveLocationActivity extends AppCompatActivity {
                     if (ddm != null) {
                         Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
+
+                        //clear the editText field
                         editText.setText("");
+
+                        //this onclick method also removes the oldest pattern with matching name
+                        mDbHandler.removeOldestSimilarPattern(locationName);
+                        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, locationName);
+                        final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+                        populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
                     }
                     mDbHandler.close();
                 }
@@ -92,22 +102,30 @@ public class SaveLocationActivity extends AppCompatActivity {
                 Log.d(DEBUG_TAG,"onItemClick()");
 
                 //item is selected from the cursor to get necessary data
+                //FIXME wywala sie przy pierwszej probie wybrania listItemu
                 foundPatternsCursor.moveToPosition(position);
                 final String selectedItemName =  foundPatternsCursor.getString(1);
                 AlertDialog.Builder builder = new AlertDialog.Builder(SaveLocationActivity.this);
                 builder.setTitle("Update location?").setMessage("Do you want to update location data or use it?:");
                 builder.setMessage(selectedItemName);
+                //Use location onClick
                 builder.setNeutralButton("Use", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         onLaunchMessageSender(selectedItemName);
                     }
                 });
+                //Update location onClick
                 builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
-                        //DELETE OLDEST MATCHING RECORD AND SAVE A NEW PATTERN
+                        mDbHandler.open();
+                        mDbHandler.removeOldestSimilarPattern(selectedItemName);
+                        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
+                        final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+                        populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
+                        mDbHandler.close();
                     }
                 });
-
+                //Cancel onClick
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                     }
@@ -125,7 +143,11 @@ public class SaveLocationActivity extends AppCompatActivity {
         }
     }
 
+    //this method is called when the SendMessageActivity is launched from the dialog
     public void onLaunchMessageSender(String locationName){
+        mDbHandler.open();
+        mDbHandler.removeOldestSimilarPattern(locationName);
+        mDbHandler.close();
         Intent intent = new Intent(this, SendMessageActivity.class);
         intent.putExtra("LocationName",locationName);
         SaveLocationActivity.this.startActivity(intent);
