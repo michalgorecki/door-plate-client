@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.regex.Pattern;
 
 public class SaveLocationActivity extends AppCompatActivity {
     private ArrayList<ScanResult> currentWifiList = new ArrayList<ScanResult>();
@@ -27,7 +28,8 @@ public class SaveLocationActivity extends AppCompatActivity {
     private EditText editText;
     private Button button;
     private ListView suggestedLocationsListView;
-
+    private PatternCursorAdapter mAdapter = null;
+    private Cursor foundPatternsCursor = null;
     private String DEBUG_TAG = "SaveLocationActivity";
     private MDBHandler mDbHandler = new MDBHandler(this);
     public Comparator<ScanResult> comparator = new Comparator<ScanResult>() {
@@ -63,14 +65,15 @@ public class SaveLocationActivity extends AppCompatActivity {
         //suggest similar patterns based on available Wifis
         mDbHandler.open();
         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
-        final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+        foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
         populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
         mDbHandler.close();
 
-        //save location once the button is clicked
+        //OnClick - save location once the button is clicked
         button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                Log.d(DEBUG_TAG,"save location OnClick()");
                 String locationName = editText.getText().toString();
                 if(!locationName.equals("") && locationName != null) {
                     mDbHandler.open();
@@ -80,33 +83,41 @@ public class SaveLocationActivity extends AppCompatActivity {
                     if (ddm != null) {
                         Log.d(DEBUG_TAG, "DatabaseDataModel: " + ddm.getRecordData());
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
-
-                        //clear the editText field
-                        editText.setText("");
-
                         //this onclick method also removes the oldest pattern with matching name
                         mDbHandler.removeOldestSimilarPattern(locationName);
+                        //clear the editText field
+                        editText.setText("");
+                        currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
                         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, locationName);
-                        final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+                        foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+                        Log.d(DEBUG_TAG,"foundPatternsCursor count: "+foundPatternsCursor.getCount());
                         populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
                     }
                     mDbHandler.close();
+                    Log.d(DEBUG_TAG,"save location OnClick()");
                 }
             }
         });
 
+        //OnClick for listview
         suggestedLocationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(DEBUG_TAG,"onItemClick()");
-
                 //item is selected from the cursor to get necessary data
+                Log.d(DEBUG_TAG,"ListView count: "+suggestedLocationsListView.getCount());
+                Log.d(DEBUG_TAG,"foundPatternsCursor count: "+foundPatternsCursor.getCount());
+
                 //FIXME wywala sie przy pierwszej probie wybrania listItemu
+                if(position >= foundPatternsCursor.getCount()){
+                    Log.d(DEBUG_TAG,"Unable to access element "+position+", it does not exist in the foundPatternsCursor. Cursor count: "+foundPatternsCursor.getCount());
+                }
                 foundPatternsCursor.moveToPosition(position);
+
                 final String selectedItemName =  foundPatternsCursor.getString(1);
                 AlertDialog.Builder builder = new AlertDialog.Builder(SaveLocationActivity.this);
-                builder.setTitle("Update location?").setMessage("Do you want to update location data or use it?:");
+                builder.setTitle("Selected location").setMessage("Do you want to update location data or use it?:");
                 builder.setMessage(selectedItemName);
                 //Use location onClick
                 builder.setNeutralButton("Use", new DialogInterface.OnClickListener() {
@@ -137,10 +148,14 @@ public class SaveLocationActivity extends AppCompatActivity {
 
 
     private void populateListViewWithPatterns(Cursor listviewInput, ListView listView){
+       Log.d(DEBUG_TAG,"populateListViewWithPatterns()");
         if(listviewInput != null && listviewInput.getCount() > 0){
-            final PatternCursorAdapter mAdapter = new PatternCursorAdapter(this,listviewInput,0);
+            mAdapter = new PatternCursorAdapter(this,listviewInput,0);
+            mAdapter.notifyDataSetChanged();
             listView.setAdapter(mAdapter);
+            Log.d(DEBUG_TAG,"ListView count: "+suggestedLocationsListView.getCount());
         }
+        Log.d(DEBUG_TAG,"populateListViewWithPatterns()");
     }
 
     //this method is called when the SendMessageActivity is launched from the dialog
