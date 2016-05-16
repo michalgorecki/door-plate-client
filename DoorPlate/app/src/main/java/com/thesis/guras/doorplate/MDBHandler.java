@@ -22,7 +22,7 @@ public class MDBHandler {
     private static final String DEBUG_TAG = "MDBHandler";
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
     private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
-    private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.2;
+    private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.18;
     private static final String PATTERNS_TABLE_NAME = "Patterns";
     private static final String PATTERNS_TABLE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " (" +

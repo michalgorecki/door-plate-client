@@ -39,4 +39,15 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
+        android:id="@+id/refreshbutton"
+        android:layout_below="@+id/locationNameEditText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/saveLocationButton"
+        android:layout_toStartOf="@+id/saveLocationButton" />
+
 </RelativeLayout>

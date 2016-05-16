@@ -27,6 +27,7 @@ public class SaveLocationActivity extends AppCompatActivity {
     //create variables corresponding to GUI elements
     private EditText editText;
     private Button button;
+    private Button refreshButton;
     private ListView suggestedLocationsListView;
     private PatternCursorAdapter mAdapter = null;
     private Cursor foundPatternsCursor = null;
@@ -59,6 +60,7 @@ public class SaveLocationActivity extends AppCompatActivity {
             Collections.sort(currentWifiList,comparator);
             editText = (EditText) findViewById(R.id.locationNameEditText);
             button = (Button) findViewById(R.id.saveLocationButton);
+            refreshButton = (Button) findViewById(R.id.refreshbutton);
             suggestedLocationsListView = (ListView) findViewById(R.id.listView);
         }
 
@@ -96,6 +98,27 @@ public class SaveLocationActivity extends AppCompatActivity {
                     mDbHandler.close();
                     Log.d(DEBUG_TAG,"save location OnClick()");
                 }
+            }
+        });
+        //refreshButton onClick
+        refreshButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Log.d(DEBUG_TAG,"refreshButton OnClick()");
+
+                    mDbHandler.open();
+                    currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
+                    Collections.sort(currentWifiList,comparator);
+                    DatabaseDataModel ddm = mDbHandler.setupInsertContent(currentWifiList, "none");
+                    if (ddm != null) {
+                        currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
+                        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "none");
+                        foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
+                        Log.d(DEBUG_TAG,"foundPatternsCursor new count: "+foundPatternsCursor.getCount());
+                        populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
+                    }
+                    mDbHandler.close();
+                    Log.d(DEBUG_TAG,"refreshButton OnClick()");
             }
         });
 

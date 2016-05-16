@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -29,14 +30,15 @@ public class SendMessageActivity extends AppCompatActivity {
     MDBHandler mdbHandler = new MDBHandler(this);
     EditText editText;
     ListView suggestedLocationsListView;
-
+    Button chooseLocationButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_message);
         editText = (EditText) findViewById(R.id.sendToLocationEditText);
-        final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         suggestedLocationsListView = (ListView) findViewById(R.id.suggestionsListView);
+        chooseLocationButton = (Button) findViewById(R.id.chooseLocationButton);
+        final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
         //check if wifi is enabled, proceed if it is
         if (!myWifiManager.isWifiEnabled()) {

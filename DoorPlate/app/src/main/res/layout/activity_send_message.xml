@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Choose location"
-        android:id="@+id/goToLocationsButton"
+        android:id="@+id/chooseLocationButton"
         android:layout_below="@+id/sendToLocationEditText"
         android:layout_alignRight="@+id/suggestionsListView"
         android:layout_alignEnd="@+id/suggestionsListView" />
