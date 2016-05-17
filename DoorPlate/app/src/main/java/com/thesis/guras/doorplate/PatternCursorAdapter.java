@@ -25,19 +25,7 @@ public class PatternCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         TextView nameView = (TextView) view.findViewById(R.id.name_textView);
-        TextView ssid1View = (TextView) view.findViewById(R.id.ssid1_textView);
-        TextView ssid2View = (TextView) view.findViewById(R.id.ssid2_textView);
-        TextView ssid3View = (TextView) view.findViewById(R.id.ssid3_textView);
-        TextView ssid4View = (TextView) view.findViewById(R.id.ssid4_textView);
-        TextView ssid5View = (TextView) view.findViewById(R.id.ssid5_textView);
-
-
         nameView.setText(cursor.getString(1));
-        ssid1View.setText(cursor.getString(2));
-        ssid2View.setText(cursor.getString(4));
-        ssid3View.setText(cursor.getString(6));
-        ssid4View.setText(cursor.getString(8));
-        ssid5View.setText(cursor.getString(10));
 
     }
 }

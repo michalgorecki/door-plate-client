@@ -18,29 +18,30 @@
         android:weightSum="1">
 
         <Button
-            android:layout_width="275dp"
+            android:layout_width="270dp"
             android:layout_height="wrap_content"
             android:text="Send message"
-            android:id="@+id/sendMessageButton"
+            android:id="@+id/sendMessageMainButton"
             android:layout_gravity="center_horizontal"
             android:layout_weight="0.10"
-            android:onClick="sendMessageButton" />
+            android:onClick="onClickSendMessage" />
 
         <Button
-            android:layout_width="271dp"
+            android:layout_width="270dp"
+            android:layout_height="wrap_content"
+            android:text="Choose location"
+            android:id="@+id/chooseMainButton"
+            android:layout_gravity="center_horizontal"
+            android:onClick="onClickChooseLocation"
+            android:layout_weight="0.09" />
+
+        <Button
+            android:layout_width="270dp"
             android:layout_height="wrap_content"
             android:text="Save current location"
-            android:id="@+id/button3"
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/saveMainButton"
             android:layout_weight="0.09"
-            android:onClick="onClickSaveLocation" />
-
-        <Button
-            android:layout_width="268dp"
-            android:layout_height="wrap_content"
-            android:text="New Button"
-            android:id="@+id/button4"
             android:layout_gravity="center_horizontal"
-            android:layout_weight="0.09" />
+            android:onClick="onClickSaveLocation" />
     </LinearLayout>
 </RelativeLayout>

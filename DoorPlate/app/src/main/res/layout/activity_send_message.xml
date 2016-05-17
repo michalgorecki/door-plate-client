@@ -44,6 +44,7 @@
         android:text="Choose location"
         android:id="@+id/chooseLocationButton"
         android:layout_below="@+id/sendToLocationEditText"
+        android:onClick="goToLocationsOnClick"
         android:layout_alignRight="@+id/suggestionsListView"
         android:layout_alignEnd="@+id/suggestionsListView" />
 </RelativeLayout>

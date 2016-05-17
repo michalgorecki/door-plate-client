@@ -1,12 +1,14 @@
 package com.thesis.guras.doorplate;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -29,44 +31,27 @@ public class SendMessageActivity extends AppCompatActivity {
     private String DEBUG_TAG = "SendMessageActivity";
     MDBHandler mdbHandler = new MDBHandler(this);
     EditText editText;
-    ListView suggestedLocationsListView;
     Button chooseLocationButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_message);
         editText = (EditText) findViewById(R.id.sendToLocationEditText);
-        suggestedLocationsListView = (ListView) findViewById(R.id.suggestionsListView);
         chooseLocationButton = (Button) findViewById(R.id.chooseLocationButton);
-        final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-        //check if wifi is enabled, proceed if it is
-        if (!myWifiManager.isWifiEnabled()) {
-            Toast.makeText(SendMessageActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
-        } else {
-            currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
-            Collections.sort(currentWifiList, comparator);
-            mdbHandler.open();
-            DatabaseDataModel mCurrentDataModel = mdbHandler.setupInsertContent(currentWifiList, "current");
-            final Cursor suggestedPatterns = mdbHandler.getSimilarPatterns(mCurrentDataModel, "none");
-            populateListViewWithSuggestedLocations(suggestedPatterns, suggestedLocationsListView);
-            mdbHandler.close();
-
-            Bundle intentExtras = getIntent().getExtras();
-            if (intentExtras != null) {
-                Log.d(DEBUG_TAG, "Intent extras was not null");
-                String selectedLocationExtra = intentExtras.getString("LocationName");
-                editText.setText(selectedLocationExtra);
-            }
+        Bundle intentExtras = getIntent().getExtras();
+        if (intentExtras != null) {
+            Log.d(DEBUG_TAG, "Intent extras was not null");
+            String selectedLocationExtra = intentExtras.getString("LocationName");
+            editText.setText(selectedLocationExtra);
         }
-
     }
 
-    private void populateListViewWithSuggestedLocations(Cursor suggestedPatternsCursor, ListView listView) {
-        if (suggestedPatternsCursor != null && suggestedPatternsCursor.getCount() > 0) {
-            final PatternCursorAdapter mAdapter = new PatternCursorAdapter(this, suggestedPatternsCursor, 0);
-            listView.setAdapter(mAdapter);
-        }
-
+    public void goToLocationsOnClick(View v) {
+        Intent intent = new Intent(this, ChooseLocationActivity.class);
+        SendMessageActivity.this.startActivity(intent);
     }
 }
+
+
