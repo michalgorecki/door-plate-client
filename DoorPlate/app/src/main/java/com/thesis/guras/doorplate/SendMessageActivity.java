@@ -1,21 +1,19 @@
 package com.thesis.guras.doorplate;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class SendMessageActivity extends AppCompatActivity {
@@ -26,23 +24,29 @@ public class SendMessageActivity extends AppCompatActivity {
                     (firstResult.level == secondResult.level ? 0 : 1));
         }
     };
-    private String currentMessage="";
-    private ArrayList<ScanResult> currentWifiList = new ArrayList<ScanResult>();
+    private String currentMessage = "";
     private String DEBUG_TAG = "SendMessageActivity";
+    private MessageCursorAdapter mMessageCursorAdapter = null;
+    private Cursor messagesCursor = null;
+    private MDBHandler mdbHandler = new MDBHandler(this);
+
     //MDBHandler mdbHandler = new MDBHandler(this);
-    EditText editText;
+    EditText messageEditText;
     Button chooseLocationButton;
+    ListView templatesListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_message);
-        editText = (EditText) findViewById(R.id.sendToLocationEditText);
+        messageEditText = (EditText) findViewById(R.id.sendToLocationEditText);
         chooseLocationButton = (Button) findViewById(R.id.chooseLocationButton);
-        if(savedInstanceState != null){
-            Log.d(DEBUG_TAG,"Restoring previous instance state");
+        templatesListView = (ListView) findViewById(R.id.templatesListView);
+
+        if (savedInstanceState != null) {
+            Log.d(DEBUG_TAG, "Restoring previous instance state");
             currentMessage = savedInstanceState.getString("CurrentMessage");
-            editText.setText(currentMessage);
+            messageEditText.setText(currentMessage);
         }
 
         Bundle intentExtras = getIntent().getExtras();
@@ -50,45 +54,87 @@ public class SendMessageActivity extends AppCompatActivity {
             Log.d(DEBUG_TAG, "Intent extras was not null");
             String selectedLocationExtra = intentExtras.getString("LocationName");
             String previousMessage = intentExtras.getString("PreviousMessage");
-            editText.setText(previousMessage+" "+selectedLocationExtra);
+            messageEditText.setText(previousMessage + " " + selectedLocationExtra);
         }
+        mdbHandler.open();
+        messagesCursor = mdbHandler.getAllMessages();
+        mMessageCursorAdapter = new MessageCursorAdapter(this, messagesCursor, 0);
+        templatesListView.setAdapter(mMessageCursorAdapter);
+        mdbHandler.close();
+        templatesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(DEBUG_TAG, "templatesListView onClick()");
+                //item is selected from the cursor to get necessary data
+                Log.d(DEBUG_TAG, "ListView count: " + templatesListView.getCount());
+                Log.d(DEBUG_TAG, "messagesCursor count: " + messagesCursor.getCount());
+                if (position >= messagesCursor.getCount()) {
+                    Log.d(DEBUG_TAG, "Unable to access element " + position + ", it does not exist in the messagesCursor. Cursor count: " + messagesCursor.getCount());
+                }
+                messagesCursor.moveToPosition(position);
+                final String selectedItemName = messagesCursor.getString(1);
+                AlertDialog.Builder builder = new AlertDialog.Builder(SendMessageActivity.this);
+                builder.setTitle(selectedItemName).setMessage("Do you want to use template: "+selectedItemName+"?");
+
+                //Use template onClick
+                builder.setPositiveButton("Use", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dlg, int x) {
+                        messageEditText.setText(selectedItemName);
+                    }
+                });
+
+                //Cancel onClick
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dlg, int x) {
+                    }
+                });
+                builder.show();
+            }
+        });
+
     }
+
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState)
-    {   Log.d(DEBUG_TAG,"onRestoreInstanceState()");
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.d(DEBUG_TAG, "onRestoreInstanceState()");
         super.onRestoreInstanceState(savedInstanceState);
         currentMessage = savedInstanceState.getString("CurrentMessage"); //retrieve your data using its corresponding key
-        Log.d(DEBUG_TAG,"CurrentMessage restored from savedInstanceState: "+savedInstanceState.getString("CurrentMessage"));
-        Log.d(DEBUG_TAG,"onRestoreInstanceState()");
+        Log.d(DEBUG_TAG, "CurrentMessage restored from savedInstanceState: " + savedInstanceState.getString("CurrentMessage"));
+        Log.d(DEBUG_TAG, "onRestoreInstanceState()");
     }
+
     @Override
-    protected void onSaveInstanceState(Bundle savedInstanceState)
-    {
-        Log.d(DEBUG_TAG,"onSaveInstanceState()");
-        String savedString = editText.getText().toString();
-        savedInstanceState.putString("CurrentMessage",savedString);
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d(DEBUG_TAG, "onSaveInstanceState()");
+        String savedString = messageEditText.getText().toString();
+        savedInstanceState.putString("CurrentMessage", savedString);
 
         super.onSaveInstanceState(savedInstanceState);
-        Log.d(DEBUG_TAG,"onSaveInstanceState()");
+        Log.d(DEBUG_TAG, "onSaveInstanceState()");
     }
+
     public void goToLocationsOnClick(View v) {
         Intent intent = new Intent(this, ChooseLocationActivity.class);
-        String message = editText.getText().toString();
-        if(message != null){
-            intent.putExtra("CurrentMessage",message);
+        String message = messageEditText.getText().toString();
+        if (message != null) {
+            intent.putExtra("CurrentMessage", message);
         }
 
         SendMessageActivity.this.startActivity(intent);
     }
-    public void sendMessageOnClick(View v){
-        Log.d(DEBUG_TAG,"sendMessageOnClick");
-        String message = editText.getText().toString();
-        if(message != null){
-            Log.d(DEBUG_TAG,"Message to be sent: "+message);
+
+    public void sendMessageOnClick(View v) {
+        Log.d(DEBUG_TAG, "sendMessageOnClick");
+        String message = messageEditText.getText().toString();
+        if (message != null) {
+            Log.d(DEBUG_TAG, "Message to be sent: " + message);
         }
-        editText.setText("");
-        Log.d(DEBUG_TAG,"sendMessageOnClick");
+        messageEditText.setText("");
+        Log.d(DEBUG_TAG, "sendMessageOnClick");
     }
+
+
 }
 
 

@@ -32,12 +32,12 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/suggestionsListView"
-        android:layout_below="@+id/sendButton"
+        android:id="@+id/templatesListView"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/sendButton" />
 
     <Button
         android:layout_width="wrap_content"
@@ -45,7 +45,7 @@
         android:text="Choose location"
         android:id="@+id/chooseLocationButton"
         android:onClick="goToLocationsOnClick"
-        android:layout_above="@+id/suggestionsListView"
+        android:layout_above="@+id/templatesListView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 </RelativeLayout>

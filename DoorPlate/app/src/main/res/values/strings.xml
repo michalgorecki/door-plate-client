@@ -6,4 +6,7 @@
     <string name="button_use">Use</string>
     <string name="button_update">Update</string>
     <string name="button_save_location">Save current location</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

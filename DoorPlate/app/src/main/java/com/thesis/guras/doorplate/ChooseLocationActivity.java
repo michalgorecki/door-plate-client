@@ -62,8 +62,6 @@ public class ChooseLocationActivity extends AppCompatActivity {
         if (intentExtras != null) {
             Log.d(DEBUG_TAG, "Intent extras was not null");
             messageIntentExtra = intentExtras.getString("CurrentMessage");
-
-
         }
 
         //suggest similar patterns based on available Wifis

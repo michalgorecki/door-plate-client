@@ -87,7 +87,7 @@ public class SaveLocationActivity extends AppCompatActivity {
                         Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(ddm)));
                         //this onclick method also removes the oldest pattern with matching name
                         mDbHandler.removeOldestSimilarPattern(locationName);
-                        //clear the editText field
+                        //clear the messageEditText field
                         editText.setText("");
                         currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
                         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, locationName);

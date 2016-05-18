@@ -125,6 +125,26 @@ public class MDBHandler {
             return null;
         }
     }
+    public Cursor getAllMessages() {
+        Log.d(DEBUG_TAG,"getAllMessages()");
+        String selectQuery = "SELECT * FROM "+MESSAGES_TABLE_NAME;
+        if(db.isOpen()){
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if(cursor.getCount()== 0){
+                Log.d(DEBUG_TAG,"Cursor count was 0!");
+                Log.d(DEBUG_TAG,"getAllMessages()");
+                return null;
+            }
+            Log.d(DEBUG_TAG,"Cursor count was: "+String.valueOf(cursor.getCount()));
+            Log.d(DEBUG_TAG,"getAllMessages()");
+            return cursor;
+
+        }else{
+            Log.d(DEBUG_TAG,"DB was not opened!");
+            Log.d(DEBUG_TAG,"getAllMessages()");
+            return null;
+        }
+    }
 
 
 
