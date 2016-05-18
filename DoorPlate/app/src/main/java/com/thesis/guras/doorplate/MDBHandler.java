@@ -24,6 +24,7 @@ public class MDBHandler {
     private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
     private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.18;
     private static final String PATTERNS_TABLE_NAME = "Patterns";
+    private static final String MESSAGES_TABLE_NAME = "Messages";
     private static final String PATTERNS_TABLE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " (" +
                     " _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -36,6 +37,7 @@ public class MDBHandler {
                     "RSSI_TOTAL NOT NULL," +
                     "INSERT_TIMESTAMP TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
                     ");";
+    private static final String MESSAGES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS "+MESSAGES_TABLE_NAME+" (_id INTEGER PRIMARY KEY AUTOINCREMENT, MESSAGE NOT NULL)";
     private static final String DROP_SSID_TABLE = "DROP TABLE IF EXISTS "+ PATTERNS_TABLE_NAME;
     private SQLiteDatabase db;
     private Context context;
@@ -79,6 +81,14 @@ public class MDBHandler {
         Log.d(DEBUG_TAG,"insertPattern()");
         return db.insert(PATTERNS_TABLE_NAME,null,mContentValues);
     }
+    public long insertMessageTemplate(String message){
+        Log.d(DEBUG_TAG, "insertMessageTemplate()");
+        ContentValues mContentValues = new ContentValues();
+        mContentValues.put("MESSAGE",message);
+        Log.d(DEBUG_TAG, db.toString());
+        Log.d(DEBUG_TAG,"insertMessageTemplate()");
+        return db.insert(MESSAGES_TABLE_NAME,null,mContentValues);
+    }
 
     /**
      *
@@ -90,6 +100,10 @@ public class MDBHandler {
         return db.delete(PATTERNS_TABLE_NAME, where, null) > 0;
     }
 
+    public boolean deleteMessageTemplate(long id){
+        String where = "_id =" + id;
+        return db.delete(MESSAGES_TABLE_NAME, where, null) > 0;
+    }
 
     public Cursor getAllPatterns() {
         Log.d(DEBUG_TAG,"getAllPatterns()");
@@ -254,8 +268,15 @@ public class MDBHandler {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(PATTERNS_TABLE_CREATE);
+            db.execSQL(MESSAGES_TABLE_CREATE);
+            String [] sampleMessages = {"I am in room: ","Office hours are scheduled for:", "I will be late by ","I am on a sick leave till: "};
+            for(int i = 0; i < sampleMessages.length ; i++){
+                String insertSQL = "INSERT INTO "+MESSAGES_TABLE_NAME+" (MESSAGE) VALUES ('"+sampleMessages[i]+"')";
+                db.execSQL(insertSQL);
+            }
             Log.d(DEBUG_TAG, "Database creating...");
             Log.d(DEBUG_TAG, "Table " + PATTERNS_TABLE_CREATE + " ver." + DATABASE_VERSION + " created");
+            Log.d(DEBUG_TAG, "Table " + MESSAGES_TABLE_CREATE+" created");
             Log.d(DEBUG_TAG,"Database path is: "+db.getPath());
 
         }

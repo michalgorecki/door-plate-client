@@ -25,8 +25,9 @@
         android:text="Send message"
         android:id="@+id/sendButton"
         android:layout_below="@+id/sendToLocationEditText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:onClick="sendMessageOnClick"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -43,8 +44,8 @@
         android:layout_height="wrap_content"
         android:text="Choose location"
         android:id="@+id/chooseLocationButton"
-        android:layout_below="@+id/sendToLocationEditText"
         android:onClick="goToLocationsOnClick"
-        android:layout_alignRight="@+id/suggestionsListView"
-        android:layout_alignEnd="@+id/suggestionsListView" />
+        android:layout_above="@+id/suggestionsListView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

@@ -30,6 +30,7 @@ public class ChooseLocationActivity extends AppCompatActivity {
     private ListView chooseLocationListView;
     private PatternCursorAdapter mAdapter = null;
     private Cursor foundPatternsCursor = null;
+    private String messageIntentExtra = null;
     private String DEBUG_TAG = "ChooseLocationActivity";
     private MDBHandler mDbHandler = new MDBHandler(this);
     public Comparator<ScanResult> comparator = new Comparator<ScanResult>() {
@@ -57,6 +58,13 @@ public class ChooseLocationActivity extends AppCompatActivity {
             refreshButton = (Button) findViewById(R.id.refreshChooseLocationButton);
             chooseLocationListView = (ListView) findViewById(R.id.chooseLocationListView);
         }
+        Bundle intentExtras = getIntent().getExtras();
+        if (intentExtras != null) {
+            Log.d(DEBUG_TAG, "Intent extras was not null");
+            messageIntentExtra = intentExtras.getString("CurrentMessage");
+
+
+        }
 
         //suggest similar patterns based on available Wifis
         mDbHandler.open();
@@ -79,8 +87,10 @@ public class ChooseLocationActivity extends AppCompatActivity {
                     currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
                     DatabaseDataModel mCurrentDataModel = mDbHandler.setupInsertContent(currentWifiList, "none");
                     foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel, "none");
-                    Log.d(DEBUG_TAG, "foundPatternsCursor new count: " + foundPatternsCursor.getCount());
-                    populateListViewWithPatterns(foundPatternsCursor, chooseLocationListView);
+                    if(foundPatternsCursor != null){
+                        Log.d(DEBUG_TAG, "foundPatternsCursor new count: " + foundPatternsCursor.getCount());
+                        populateListViewWithPatterns(foundPatternsCursor, chooseLocationListView);
+                    }
                 }
                 mDbHandler.close();
                 Log.d(DEBUG_TAG, "refreshButton OnClick()");
@@ -141,6 +151,9 @@ public class ChooseLocationActivity extends AppCompatActivity {
         mDbHandler.close();
         Intent intent = new Intent(this, SendMessageActivity.class);
         intent.putExtra("LocationName",locationName);
+        if(messageIntentExtra != null){
+            intent.putExtra("PreviousMessage",messageIntentExtra);
+        }
         ChooseLocationActivity.this.startActivity(intent);
     }
     @Override

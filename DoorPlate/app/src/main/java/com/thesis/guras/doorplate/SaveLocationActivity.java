@@ -114,8 +114,11 @@ public class SaveLocationActivity extends AppCompatActivity {
                         currentWifiList = (ArrayList<ScanResult>) myWifiManager.getScanResults();
                         DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "none");
                         foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
-                        Log.d(DEBUG_TAG,"foundPatternsCursor new count: "+foundPatternsCursor.getCount());
-                        populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
+                        if(foundPatternsCursor != null){
+                            Log.d(DEBUG_TAG, "foundPatternsCursor new count: " + foundPatternsCursor.getCount());
+                            populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
+                        }
+
                     }
                     mDbHandler.close();
                     Log.d(DEBUG_TAG,"refreshButton OnClick()");
