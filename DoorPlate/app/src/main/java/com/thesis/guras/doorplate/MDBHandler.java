@@ -21,10 +21,15 @@ public class MDBHandler {
     private static final int DATABASE_VERSION = 1;
     private static final String DEBUG_TAG = "MDBHandler";
     private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
+    //location recognition parameters
     private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
     private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.18;
+
+    //table names and SQL queries
     private static final String PATTERNS_TABLE_NAME = "Patterns";
     private static final String MESSAGES_TABLE_NAME = "Messages";
+    private static final String EVENTS_TABLE_NAME = "Events";
+
     private static final String PATTERNS_TABLE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + PATTERNS_TABLE_NAME + " (" +
                     " _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -38,15 +43,14 @@ public class MDBHandler {
                     "INSERT_TIMESTAMP TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
                     ");";
     private static final String MESSAGES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS "+MESSAGES_TABLE_NAME+" (_id INTEGER PRIMARY KEY AUTOINCREMENT, MESSAGE NOT NULL)";
+    private static final String EVENTS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS "+EVENTS_TABLE_NAME+" (_id INTEGER PRIMARY KEY AUTOINCREMENT, NAME NOT NULL, EVENTDATE DATETIME NOT NULL)";
     private static final String DROP_SSID_TABLE = "DROP TABLE IF EXISTS "+ PATTERNS_TABLE_NAME;
+
     private SQLiteDatabase db;
     private Context context;
     private MDBOpenHelper myDbOpenHelper;
 
-    /**
-     *
-     * @param context
-     */
+
     MDBHandler(Context context) {
         this.context = context;
     }
@@ -60,7 +64,7 @@ public class MDBHandler {
     /**
      *
      * @param dbm
-     * @return Id assigned to the record
+     * @return Id assigned to the record or null
      */
     public long insertPattern(DatabaseDataModel dbm){
         Log.d(DEBUG_TAG, "insertPattern()");
@@ -81,6 +85,12 @@ public class MDBHandler {
         Log.d(DEBUG_TAG,"insertPattern()");
         return db.insert(PATTERNS_TABLE_NAME,null,mContentValues);
     }
+
+    /**
+     * This method is used to insert message template to Messages table
+     * @param message
+     * @return id of inserted message or null
+     */
     public long insertMessageTemplate(String message){
         Log.d(DEBUG_TAG, "insertMessageTemplate()");
         ContentValues mContentValues = new ContentValues();
@@ -91,15 +101,52 @@ public class MDBHandler {
     }
 
     /**
-     *
-     * @param id
-     * @return
+     * This method is used to insert events to the database
+     * @param name
+     * @param day
+     * @param month
+     * @param year
+     * @param hour
+     * @param minute
+     * @return id of the  inserted pattern or null
      */
+    public long insertEvent(String name, int day, int month, int year, int hour, int minute){
+        Log.d(DEBUG_TAG, "insertEvent()");
+        String dayString = String.valueOf(day);
+        if(dayString.length() == 1){
+            dayString = "0"+String.valueOf(day);
+        }
+        String monthString = String.valueOf(month);
+        if(monthString.length() == 1){
+            monthString = "0"+String.valueOf(month);
+        }
+        String hourString = String.valueOf(hour);
+        if(hourString.length() == 1){
+            hourString = "0"+String.valueOf(hour);
+        }
+        String minuteString = String.valueOf(minute);
+        if(minuteString.length() == 1){
+           minuteString = "0"+String.valueOf(minute);
+        }
+        String time = String.valueOf(year)+"-"+monthString+"-"+dayString+" "+hourString+"-"+minuteString;
+        Log.d(DEBUG_TAG,"EventTime: "+time);
+        ContentValues mContentValues = new ContentValues();
+        mContentValues.put("NAME",name);
+        mContentValues.put("EVENTDATE",time);
+        Log.d(DEBUG_TAG, db.toString());
+        Log.d(DEBUG_TAG,"insertEvent()");
+        return db.insert(EVENTS_TABLE_NAME,null,mContentValues);
+    }
+
+
     public boolean deletePattern(long id){
         String where = "_id =" + id;
         return db.delete(PATTERNS_TABLE_NAME, where, null) > 0;
     }
-
+    public boolean deleteEvent(long id){
+        String where = "_id ="+id;
+        return db.delete(EVENTS_TABLE_NAME,where,null) > 0;
+    }
     public boolean deleteMessageTemplate(long id){
         String where = "_id =" + id;
         return db.delete(MESSAGES_TABLE_NAME, where, null) > 0;
@@ -145,6 +192,25 @@ public class MDBHandler {
             return null;
         }
     }
+    public Cursor getAllEvents() {
+        Log.d(DEBUG_TAG,"getAllEvents()");
+        String selectQuery = "SELECT * FROM "+EVENTS_TABLE_NAME+" ORDER BY EVENTDATE ASC";
+        if(db.isOpen()){
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if(cursor.getCount()== 0){
+                Log.d(DEBUG_TAG,"Cursor count was 0!");
+                Log.d(DEBUG_TAG,"getAllEvents()");
+                return null;
+            }
+            Log.d(DEBUG_TAG,"Cursor count was: "+String.valueOf(cursor.getCount()));
+            Log.d(DEBUG_TAG,"getAllEvents()");
+            return cursor;
+        }else{
+            Log.d(DEBUG_TAG,"DB was not opened!");
+            Log.d(DEBUG_TAG,"getAllEvents()");
+            return null;
+        }
+    }
 
 
 
@@ -171,8 +237,6 @@ public class MDBHandler {
         }
         Log.d(DEBUG_TAG,"getPatternsList()");
         return null;
-
-
     }
 
     /**
@@ -200,7 +264,7 @@ public class MDBHandler {
     }
 
     /**
-     * This method is used to suggest locations which can be used
+     * This method is used to suggest locations which can be used based on recognition parameters
      * @param ddm
      * @param locationName
      * @return
@@ -289,7 +353,9 @@ public class MDBHandler {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(PATTERNS_TABLE_CREATE);
             db.execSQL(MESSAGES_TABLE_CREATE);
-            String [] sampleMessages = {"I am in room: ","Office hours are scheduled for:", "I will be late by ","I am on a sick leave till: "};
+            db.execSQL(EVENTS_TABLE_CREATE);
+
+            String [] sampleMessages = {"I am in room: ","Office hours are scheduled for:", "I will be late by ","I am on a sick leave till: ","I am unavailable today"};
             for(int i = 0; i < sampleMessages.length ; i++){
                 String insertSQL = "INSERT INTO "+MESSAGES_TABLE_NAME+" (MESSAGE) VALUES ('"+sampleMessages[i]+"')";
                 db.execSQL(insertSQL);
@@ -297,6 +363,7 @@ public class MDBHandler {
             Log.d(DEBUG_TAG, "Database creating...");
             Log.d(DEBUG_TAG, "Table " + PATTERNS_TABLE_CREATE + " ver." + DATABASE_VERSION + " created");
             Log.d(DEBUG_TAG, "Table " + MESSAGES_TABLE_CREATE+" created");
+            Log.d(DEBUG_TAG,"Table "+EVENTS_TABLE_NAME+" created");
             Log.d(DEBUG_TAG,"Database path is: "+db.getPath());
 
         }

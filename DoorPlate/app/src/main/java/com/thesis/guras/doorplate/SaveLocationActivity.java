@@ -135,7 +135,6 @@ public class SaveLocationActivity extends AppCompatActivity {
                 Log.d(DEBUG_TAG,"ListView count: "+suggestedLocationsListView.getCount());
                 Log.d(DEBUG_TAG,"foundPatternsCursor count: "+foundPatternsCursor.getCount());
 
-                //FIXME wywala sie przy pierwszej probie wybrania listItemu
                 if(position >= foundPatternsCursor.getCount()){
                     Log.d(DEBUG_TAG,"Unable to access element "+position+", it does not exist in the foundPatternsCursor. Cursor count: "+foundPatternsCursor.getCount());
                 }

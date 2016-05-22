@@ -34,4 +34,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ChooseLocationActivity.class);
         MainActivity.this.startActivity(intent);
     }
+    public void onClickGoToEvents(View v){
+        Intent intent = new Intent(this, ManageEventsActivity.class);
+        MainActivity.this.startActivity(intent);
+    }
 }

@@ -53,8 +53,18 @@ public class SendMessageActivity extends AppCompatActivity {
         if (intentExtras != null) {
             Log.d(DEBUG_TAG, "Intent extras was not null");
             String selectedLocationExtra = intentExtras.getString("LocationName");
+            String eventData = intentExtras.getString("EventData");
             String previousMessage = intentExtras.getString("PreviousMessage");
-            messageEditText.setText(previousMessage + " " + selectedLocationExtra);
+            if(eventData == null){
+                eventData = "";
+            }
+            if(selectedLocationExtra == null){
+                selectedLocationExtra = "";
+            }
+            if(previousMessage == null){
+                previousMessage = "";
+            }
+            messageEditText.setText(previousMessage + " " + selectedLocationExtra+ " "+eventData);
         }
         mdbHandler.open();
         messagesCursor = mdbHandler.getAllMessages();
