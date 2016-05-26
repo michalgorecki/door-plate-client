@@ -14,8 +14,8 @@
         android:theme="@style/AppTheme">
         <uses-permission android:name="ACCESS_WIFI_STATE" />
         <uses-permission android:name="CHANGE_WIFI_STATE" />
+        <uses-permission android:name="android.permission.VIBRATE" />
         <uses-permission android:name="android.permission.SET_DEBUG_APP" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,6 +31,7 @@
             android:label="@string/title_activity_events"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ManageEventsActivity"></activity>
+        <receiver android:name=".MyBroadcastReceiver"></receiver>
     </application>
 
 </manifest>

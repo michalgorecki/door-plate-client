@@ -69,8 +69,9 @@ public class ManageEventsActivity extends AppCompatActivity {
                 builder.setNeutralButton("Delete event", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         mdbHandler.open();
+                        Log.d(DEBUG_TAG,"Trying to delete event...");
                         if(!mdbHandler.deleteEvent(eventsCursor.getInt(0))){
-                            Log.d(DEBUG_TAG,"Failed to delete event");
+                            Log.d(DEBUG_TAG,"Failed to delete event no. "+eventsCursor.getInt(0));
                         }
                         eventCursorAdapter.notifyDataSetChanged();
                         eventsListView.setAdapter(eventCursorAdapter);
