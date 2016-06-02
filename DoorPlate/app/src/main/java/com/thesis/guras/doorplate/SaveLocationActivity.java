@@ -192,6 +192,13 @@ public class SaveLocationActivity extends AppCompatActivity {
         intent.putExtra("LocationName",locationName);
         SaveLocationActivity.this.startActivity(intent);
     }
+
+    protected void onClickExportDB(View v){
+        Log.d(DEBUG_TAG,"onClickExportDB()");
+        mDbHandler.exportDatabaseToFile();
+        Log.d(DEBUG_TAG,"onClickExportDB()");
+    }
+
     @Override
     protected void onDestroy(){
         mDbHandler.close();

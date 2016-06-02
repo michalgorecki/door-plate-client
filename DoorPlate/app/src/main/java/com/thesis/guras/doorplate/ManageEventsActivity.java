@@ -88,7 +88,6 @@ public class ManageEventsActivity extends AppCompatActivity {
             }
         });
     }
-
     protected void onClickGoToAddEvent(View v){
         Intent intent = new Intent(this,AddEventActivity.class);
         ManageEventsActivity.this.startActivity(intent);

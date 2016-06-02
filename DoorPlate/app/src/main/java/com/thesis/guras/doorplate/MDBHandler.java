@@ -6,9 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.wifi.ScanResult;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -20,7 +25,7 @@ import java.util.Comparator;
 public class MDBHandler {
     private static final int DATABASE_VERSION = 1;
     private static final String DEBUG_TAG = "MDBHandler";
-    private static final String DATABASE_NAME = "locationTemplatesDatabase.sqlite";
+    private static final String DATABASE_NAME = "DoorPlateDatabase";
     //location recognition parameters
     private static final int MIN_NUMBER_OF_MATCHING_PATTERNS = 2;
     private static final double MAX_DEVIATION_FROM_RSSI_TOTAL = 0.18;
@@ -56,7 +61,7 @@ public class MDBHandler {
     }
 
     public MDBHandler open(){
-        myDbOpenHelper = new MDBOpenHelper(context, PATTERNS_TABLE_NAME, null, DATABASE_VERSION);
+        myDbOpenHelper = new MDBOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
         db = myDbOpenHelper.getWritableDatabase();
         return this;
     }
@@ -212,8 +217,48 @@ public class MDBHandler {
         }
     }
 
+    public void exportDatabaseToFile(){
+        Log.d(DEBUG_TAG,"exportDatabaseToFile()");
+        try{
+            File externalStorage = Environment.getExternalStorageDirectory();
 
+            String backupDBFileName = DATABASE_NAME;
+            File backupDB = new File(externalStorage,backupDBFileName);
+            backupDB.createNewFile();
+            if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+                Log.d(DEBUG_TAG,"Can read and write the media");
 
+            } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState())) {
+                Log.d(DEBUG_TAG,"Can read only");
+            } else {
+                Log.d(DEBUG_TAG,"Can't read or write!");
+            }
+
+            Log.d(DEBUG_TAG,"Checking if the directories have been created: "+backupDB.mkdirs());
+            Log.d(DEBUG_TAG,"Checking if file exists: " +String.valueOf(backupDB.exists()));
+            Log.d(DEBUG_TAG,"BackupDB path: "+backupDB.getPath());
+            Log.d(DEBUG_TAG,"Current DB path: "+db.getPath());
+            File data  = Environment.getDataDirectory();
+            if(backupDB.canWrite()){
+                String currentDbPath = db.getPath()+".sqlite";
+                File currentDb = new File(data, currentDbPath);
+
+                Log.d(DEBUG_TAG,backupDB.getPath());
+                FileChannel src = new FileInputStream(currentDb).getChannel();
+                FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src,0,src.size());
+                src.close();
+                dst.close();
+            }else{
+                Log.d(DEBUG_TAG,"Unable to write to external storage!");
+            }
+        }catch(Exception e){
+            Log.d(DEBUG_TAG,"Exception caught during DB export.");
+            e.printStackTrace();
+            Log.d(DEBUG_TAG,"exportDatabaseToFile()");
+        }
+        Log.d(DEBUG_TAG,"exportDatabaseToFile()");
+    }
 
     /**
      *
