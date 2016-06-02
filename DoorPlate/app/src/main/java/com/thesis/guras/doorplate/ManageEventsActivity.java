@@ -69,12 +69,20 @@ public class ManageEventsActivity extends AppCompatActivity {
                 builder.setNeutralButton("Delete event", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         mdbHandler.open();
-                        Log.d(DEBUG_TAG,"Trying to delete event...");
+                        Log.d(DEBUG_TAG,"Trying to delete event no."+eventsCursor.getInt(0));
                         if(!mdbHandler.deleteEvent(eventsCursor.getInt(0))){
                             Log.d(DEBUG_TAG,"Failed to delete event no. "+eventsCursor.getInt(0));
                         }
-                        eventCursorAdapter.notifyDataSetChanged();
-                        eventsListView.setAdapter(eventCursorAdapter);
+                        mdbHandler.open();
+                        eventsCursor = mdbHandler.getAllEvents();
+                        if(eventsCursor != null){
+                            eventCursorAdapter = new EventCursorAdapter(ManageEventsActivity.this,eventsCursor,0);
+                            eventCursorAdapter.notifyDataSetChanged();
+                            eventsListView.setAdapter(eventCursorAdapter);
+                        }else{
+                            eventCursorAdapter = null;
+                            eventsListView.setAdapter(eventCursorAdapter);
+                        }
                         mdbHandler.close();
                     }
                 });
