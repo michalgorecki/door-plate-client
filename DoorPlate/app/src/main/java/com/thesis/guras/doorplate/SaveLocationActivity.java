@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -51,6 +53,11 @@ public class SaveLocationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_save_location);
         final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
         //check if wifi is enabled
         if (!myWifiManager.isWifiEnabled()) {
             Toast.makeText(SaveLocationActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
@@ -193,10 +200,21 @@ public class SaveLocationActivity extends AppCompatActivity {
         SaveLocationActivity.this.startActivity(intent);
     }
 
+
     protected void onClickExportDB(View v){
         Log.d(DEBUG_TAG,"onClickExportDB()");
         mDbHandler.exportDatabaseToFile();
-        Log.d(DEBUG_TAG,"onClickExportDB()");
+        Log.d(DEBUG_TAG,"onClickExportDB()  ");
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

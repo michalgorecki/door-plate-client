@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -46,7 +48,11 @@ public class ChooseLocationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_location);
         final WifiManager myWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
         //check if wifi is enabled
         if (!myWifiManager.isWifiEnabled()) {
             Toast.makeText(ChooseLocationActivity.this, "Please enable Wifi to enable scanning...", Toast.LENGTH_SHORT).show();
@@ -153,6 +159,16 @@ public class ChooseLocationActivity extends AppCompatActivity {
             intent.putExtra("PreviousMessage",messageIntentExtra);
         }
         ChooseLocationActivity.this.startActivity(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
     @Override
     protected void onDestroy(){

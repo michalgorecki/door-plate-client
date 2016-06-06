@@ -5,9 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.wifi.ScanResult;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -48,7 +50,12 @@ public class SendMessageActivity extends AppCompatActivity {
             currentMessage = savedInstanceState.getString("CurrentMessage");
             messageEditText.setText(currentMessage);
         }
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
 
+        }
         Bundle intentExtras = getIntent().getExtras();
         if (intentExtras != null) {
             Log.d(DEBUG_TAG, "Intent extras was not null");
@@ -114,6 +121,7 @@ public class SendMessageActivity extends AppCompatActivity {
         Log.d(DEBUG_TAG, "onRestoreInstanceState()");
     }
 
+
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         Log.d(DEBUG_TAG, "onSaveInstanceState()");
@@ -122,6 +130,15 @@ public class SendMessageActivity extends AppCompatActivity {
 
         super.onSaveInstanceState(savedInstanceState);
         Log.d(DEBUG_TAG, "onSaveInstanceState()");
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void goToLocationsOnClick(View v) {

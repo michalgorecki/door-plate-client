@@ -9,10 +9,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.thesis.guras.doorplate.ChooseLocationActivity">
 
+
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/chooseLocationListView"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/refreshChooseLocationButton"
         android:layout_alignParentTop="true" />
