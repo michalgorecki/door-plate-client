@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.wifi.ScanResult;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
 

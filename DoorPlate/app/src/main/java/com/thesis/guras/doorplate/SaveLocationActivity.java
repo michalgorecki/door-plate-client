@@ -125,7 +125,6 @@ public class SaveLocationActivity extends AppCompatActivity {
                             Log.d(DEBUG_TAG, "foundPatternsCursor new count: " + foundPatternsCursor.getCount());
                             populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
                         }
-
                     }
                     mDbHandler.close();
                     Log.d(DEBUG_TAG,"refreshButton OnClick()");
@@ -152,17 +151,20 @@ public class SaveLocationActivity extends AppCompatActivity {
                 builder.setTitle("Selected location").setMessage("Do you want to update location data or use it?:");
                 builder.setMessage(selectedItemName);
                 //Use location onClick
-                builder.setNeutralButton("Use", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("Use", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         onLaunchMessageSender(selectedItemName);
                     }
                 });
                 //Update location onClick
-                builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                builder.setNeutralButton("Update", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         mDbHandler.open();
                         mDbHandler.removeOldestSimilarPattern(selectedItemName);
-                        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList, "current");
+                        String updatedLocationName = foundPatternsCursor.getString(1);
+                        mDbHandler.deletePattern(foundPatternsCursor.getInt(0));
+                        DatabaseDataModel mCurrentDataModel= mDbHandler.setupInsertContent(currentWifiList,updatedLocationName);
+                        Log.d(DEBUG_TAG,"Inserted record no. "+String.valueOf(mDbHandler.insertPattern(mCurrentDataModel)));
                         final Cursor foundPatternsCursor = mDbHandler.getSimilarPatterns(mCurrentDataModel,"none");
                         populateListViewWithPatterns(foundPatternsCursor,suggestedLocationsListView);
                         mDbHandler.close();
@@ -192,9 +194,9 @@ public class SaveLocationActivity extends AppCompatActivity {
 
     //this method is called when the SendMessageActivity is launched from the dialog
     public void onLaunchMessageSender(String locationName){
-        mDbHandler.open();
+        /*mDbHandler.open();
         mDbHandler.removeOldestSimilarPattern(locationName);
-        mDbHandler.close();
+        mDbHandler.close();*/
         Intent intent = new Intent(this, SendMessageActivity.class);
         intent.putExtra("LocationName",locationName);
         SaveLocationActivity.this.startActivity(intent);

@@ -82,10 +82,12 @@ public class AddEventActivity extends AppCompatActivity {
         mCalendar.set(Calendar.MONTH,mMonth);
         mCalendar.set(Calendar.YEAR,mYear);
         mCalendar.set(Calendar.DAY_OF_MONTH,mDay);
-        mCalendar.set(Calendar.HOUR,mHour-1);
-        mCalendar.set(Calendar.MINUTE,mMinutes+30);
+        mCalendar.set(Calendar.HOUR,mHour);
+        mCalendar.set(Calendar.MINUTE,mMinutes);
+        mCalendar.add(Calendar.MINUTE,-30);
         mCalendar.set(Calendar.SECOND,0);
         mCalendar.set(Calendar.MILLISECOND,0);
+        Log.d(DEBUG_TAG,mCalendar.getTime().toString());
 
         makeNotification(mCalendar,mName,"You have an upcoming event!");
 

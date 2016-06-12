@@ -59,6 +59,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                 eventCursorAdapter.notifyDataSetChanged();
                 eventsCursor.moveToPosition(position);
                 final String selectedItemName = eventsCursor.getString(1);
+                final int selectedItemId = eventsCursor.getInt(0);
+                Log.d(DEBUG_TAG,"Selected item Id: "+String.valueOf(selectedItemId));
                 AlertDialog.Builder builder = new AlertDialog.Builder(ManageEventsActivity.this);
                 builder.setTitle("Selected event").setMessage("Do you want to delete the event?");
                 builder.setMessage(selectedItemName);
@@ -74,11 +76,11 @@ public class ManageEventsActivity extends AppCompatActivity {
                    }
                 });
                 //Delete event onClick
-                builder.setNeutralButton("Delete event", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("Delete event", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         mdbHandler.open();
                         Log.d(DEBUG_TAG,"Trying to delete event no."+eventsCursor.getInt(0));
-                        if(!mdbHandler.deleteEvent(eventsCursor.getInt(0))){
+                        if(!mdbHandler.deleteEvent(selectedItemId)){
                             Log.d(DEBUG_TAG,"Failed to delete event no. "+eventsCursor.getInt(0));
                         }
                         mdbHandler.open();
@@ -96,7 +98,7 @@ public class ManageEventsActivity extends AppCompatActivity {
                 });
 
                 //Cancel onClick
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                     }
                 });

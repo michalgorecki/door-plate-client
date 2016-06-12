@@ -120,7 +120,7 @@ public class ChooseLocationActivity extends AppCompatActivity {
                 builder.setMessage(selectedItemName);
 
                 //Use location onClick
-                builder.setNeutralButton("Use", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("Use", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int x) {
                         onLaunchMessageSender(selectedItemName);
                     }
