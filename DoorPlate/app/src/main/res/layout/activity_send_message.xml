@@ -37,7 +37,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/sendButton" />
+        android:layout_below="@+id/sendButton"
+        android:layout_above="@+id/addMessageButton" />
 
     <Button
         android:layout_width="wrap_content"
@@ -48,4 +49,15 @@
         android:layout_above="@+id/templatesListView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add message template"
+        android:id="@+id/addMessageButton"
+        android:onClick="addMessageOnClick"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>

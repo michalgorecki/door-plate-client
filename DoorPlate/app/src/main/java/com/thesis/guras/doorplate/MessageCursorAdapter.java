@@ -26,7 +26,6 @@ public class MessageCursorAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         TextView nameView = (TextView) view.findViewById(R.id.name_textView);
         nameView.setText(cursor.getString(1));
-
     }
 }
 
